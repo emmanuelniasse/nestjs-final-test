@@ -1,18 +1,29 @@
-import { Injectable, NotImplementedException } from '@nestjs/common';
-
+import { ConflictException, Injectable } from '@nestjs/common';
+import { User } from '@prisma/client';
+import { PrismaService } from '../prisma.service';
 @Injectable()
 export class UserService {
-    constructor() {}
+    constructor(private prisma: PrismaService) {}
 
-    addUser(email: string): Promise<void> {
-        throw new NotImplementedException();
+    async addUser(email: string): Promise<User> {
+        const userAlreadyExists = await this.getUser(email);
+        if (userAlreadyExists) {
+            throw new ConflictException('User with this email already exists');
+        }
+        return this.prisma.user.create({
+            data: { email },
+        });
     }
 
     getUser(email: string): Promise<unknown> {
-        throw new NotImplementedException();
+        return this.prisma.user.findUnique({ where: { email } });
     }
 
-    resetData(): Promise<void> {
-        throw new NotImplementedException();
+    async resetData(): Promise<void> {
+        try {
+            await this.prisma.user.deleteMany({});
+        } catch (error) {
+            throw error;
+        }
     }
 }
