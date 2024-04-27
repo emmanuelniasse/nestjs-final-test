@@ -1,55 +1,39 @@
-import {
-    BadRequestException,
-    Injectable,
-    NotImplementedException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Task } from '@prisma/client';
-import { PrismaService } from '../prisma.service';
+import { DatabaseService } from '../infrastructure/database/database.service';
 
 @Injectable()
 export class TaskService {
-    constructor(private prisma: PrismaService) {}
+    constructor(private readonly databaseService: DatabaseService) {}
 
     async addTask(
         name: string,
         userId: string,
         priority: number,
     ): Promise<Task> {
-        const user = await this.prisma.user.findUnique({
+        const user = await this.databaseService.user.findUnique({
             where: { id: userId },
         });
-        console.log(user);
-        //     console.log('u', user);
-        //             // Créer l'utilisateur avec l'email donné
 
-        //     return this.prisma.task.create({
-        //         data: { name, user: { connect: { id: userId } }, priority },
-        //     });
-        // } else {
-        //     throw new Error();
-        // }
-        await this.prisma.user
-            .findUniqueOrThrow({
-                where: { id: userId },
-            })
-            .catch(() => new BadRequestException('No User found!'));
+        if (!user) {
+            new BadRequestException('No User found!');
+        }
 
-        return this.prisma.task.create({
-            // data: { name, user: { connect: { id: userId } }, priority },
+        return this.databaseService.task.create({
             data: { name, userId, priority },
         });
     }
 
-    getTaskByName(name: string): Promise<unknown> {
-        throw new NotImplementedException();
-    }
+    // getTaskByName(name: string): Promise<unknown> {
+    //     throw new NotImplementedException();
+    // }
 
     async getUserTasks(userId: string): Promise<unknown[]> {
         try {
             if (userId.length <= 10) {
                 throw new Error('Invalid userId');
             }
-            const tasks = await this.prisma.task.findMany({
+            const tasks = await this.databaseService.task.findMany({
                 where: { userId },
             });
             return tasks;
@@ -58,11 +42,8 @@ export class TaskService {
         }
     }
 
-    async resetData(): Promise<void> {
-        try {
-            await this.prisma.task.deleteMany({});
-        } catch (error) {
-            throw error;
-        }
+    async resetData(): Promise<string> {
+        await this.databaseService.task.deleteMany();
+        return 'Tasks deleted';
     }
 }
