@@ -9,6 +9,8 @@ import {
 import { AddTaskDto } from './dto/add-task.dto';
 import { TaskService } from './task.service';
 
+// TASK 2 : comment squash
+
 @Controller()
 export class TaskController {
     constructor(private readonly taskService: TaskService) {}
