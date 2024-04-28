@@ -16,12 +16,18 @@ export class UserService {
         });
     }
 
-    getUser(email: string): Promise<unknown> {
-        return this.databaseService.user.findUnique({ where: { email } });
+    async getUser(email: string): Promise<unknown> {
+        return await this.databaseService.user.findUnique({ where: { email } });
     }
 
     async resetData(): Promise<string> {
-        await this.databaseService.user.deleteMany();
+        // Wait for 50ms to allow `task.deleteMany()` function to finish before proceeding
+        await new Promise((resolve) => {
+            setTimeout(async () => {
+                await this.databaseService.user.deleteMany();
+                resolve('Users deleted');
+            }, 50);
+        });
         return 'Users deleted';
     }
 }

@@ -1,13 +1,20 @@
-import { IsString, MinLength } from 'class-validator';
+import {
+    IsNotEmpty,
+    IsString,
+    IsUUID,
+    Matches,
+    MinLength,
+} from 'class-validator';
 
 export class AddTaskDto {
     @IsString()
     @MinLength(2)
     name: string;
 
-    @IsString()
-    userId: number;
+    @IsUUID()
+    userId: string;
 
-    @IsString()
+    @IsNotEmpty()
+    @Matches(/^[0-9]*$/)
     priority: number;
 }

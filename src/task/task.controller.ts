@@ -1,4 +1,12 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Get,
+    Param,
+    Post,
+    ValidationPipe,
+} from '@nestjs/common';
+import { AddTaskDto } from './dto/add-task.dto';
 import { TaskService } from './task.service';
 
 @Controller()
@@ -10,13 +18,13 @@ export class TaskController {
         return this.taskService.getUserTasks(userId);
     }
 
-    // @Post()
-    // addTask(
-    //     @Body(new ValidationPipe({ skipMissingProperties: true }))
-    //     addTaskDto: AddTaskDto,
-    // ) {
-    //     const { name, userId, priority } = addTaskDto;
-    //     console.log(name, userId, priority);
-    //     // return this.taskService.addTask( name, userId, priority)
-    // }
+    @Post()
+    async addTask(
+        @Body(new ValidationPipe({ skipMissingProperties: true }))
+        addTaskDto: AddTaskDto,
+    ) {
+        const { name, userId, priority } = addTaskDto;
+        const priorityInt = +priority;
+        return await this.taskService.addTask(name, userId, priorityInt);
+    }
 }

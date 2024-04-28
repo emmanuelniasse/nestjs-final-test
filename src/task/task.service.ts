@@ -1,16 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Task } from '@prisma/client';
+import { isValidUUID } from '../helpers/check-uuid';
 import { DatabaseService } from '../infrastructure/database/database.service';
 
 @Injectable()
 export class TaskService {
     constructor(private readonly databaseService: DatabaseService) {}
 
-    async addTask(
-        name: string,
-        userId: string,
-        priority: number,
-    ): Promise<Task> {
+    async addTask(name: string, userId: string, priority: any): Promise<Task> {
         const user = await this.databaseService.user.findUnique({
             where: { id: userId },
         });
@@ -19,18 +16,23 @@ export class TaskService {
             new BadRequestException('No User found!');
         }
 
-        return this.databaseService.task.create({
-            data: { name, userId, priority },
+        const priorityInNumber = isNaN(priority) ? +priority : priority;
+        const newTask = await this.databaseService.task.create({
+            data: { name, userId, priority: priorityInNumber },
+        });
+
+        return newTask;
+    }
+
+    async getTaskByName(name: string): Promise<Task | null> {
+        return this.databaseService.task.findFirst({
+            where: { name },
         });
     }
 
-    // getTaskByName(name: string): Promise<unknown> {
-    //     throw new NotImplementedException();
-    // }
-
-    async getUserTasks(userId: string): Promise<unknown[]> {
+    async getUserTasks(userId: string): Promise<Task[]> {
         try {
-            if (userId.length <= 10) {
+            if (!isValidUUID(userId)) {
                 throw new Error('Invalid userId');
             }
             const tasks = await this.databaseService.task.findMany({
