@@ -21,13 +21,7 @@ export class UserService {
     }
 
     async resetData(): Promise<string> {
-        // Wait for 50ms to allow `task.deleteMany()` function to finish before proceeding
-        await new Promise((resolve) => {
-            setTimeout(async () => {
-                await this.databaseService.user.deleteMany();
-                resolve('Users deleted');
-            }, 50);
-        });
+        await this.databaseService.user.deleteMany();
         return 'Users deleted';
     }
 }
